@@ -13,6 +13,11 @@ namespace SnakeLadder.Main
             CurrentPosition += stepCount;
         }
 
+        internal void JumpTo(int position)
+        {
+            CurrentPosition = position;
+        }
+
         internal int Roll(Dice dice)
         {
             return dice.Roll();

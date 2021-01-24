@@ -1,9 +1,6 @@
 ﻿using FluentAssertions;
 using Moq;
 using SnakeLadder.Main;
-using System;
-using System.Collections.Generic;
-using System.Text;
 using Xunit;
 
 namespace SnakeLadder.Tests.UnitTests
@@ -11,7 +8,7 @@ namespace SnakeLadder.Tests.UnitTests
     [Trait("Tests", "UnitTests")]
     public class PlayerTests
     {
-        [Fact]
+        [Fact(DisplayName = "Player should be able to roll dice")]
         public void Player_should_be_able_to_roll_dice()
         {
             var diceMock = new Mock<Dice>();
@@ -22,7 +19,7 @@ namespace SnakeLadder.Tests.UnitTests
             diceMock.Verify(x => x.Roll(), Times.Once);
         }
 
-        [Fact]
+        [Fact(DisplayName = "Player when takes steps should update current position")]
         public void Player_when_takes_steps_should_update_current_position()
         {
             var player = new Player { Id = "p123" };

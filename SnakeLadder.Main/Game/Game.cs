@@ -19,7 +19,11 @@ namespace SnakeLadder.Main
             _endGameListner = endGameListner;
             _gameSettings = gameSetting;
             _dice = dice;
-            _board = new Board(_gameSettings.BoardSetting.Min, _gameSettings.BoardSetting.Max);
+            _board = new BoardBuilder()
+                    .WithMinPosition(_gameSettings.BoardSetting.Min)
+                    .WithMaxPosition(_gameSettings.BoardSetting.Max)
+                    .WithSnakes(_gameSettings.Snakes)
+                    .Build();
         }
 
         public void AddPlayer(Player player)

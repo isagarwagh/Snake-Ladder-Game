@@ -2,9 +2,7 @@
 using Moq;
 using SnakeLadder.Main;
 using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using Xunit;
 
 namespace SnakeLadder.Tests.UnitTests
@@ -12,7 +10,7 @@ namespace SnakeLadder.Tests.UnitTests
     [Trait("Tests", "UnitTests")]
     public class GameTests
     {
-        [Fact]
+        [Fact(DisplayName = "Game should be able to add player")]
         public void Game_should_be_able_to_add_player()
         {
             var diceMock = new Mock<Dice>();
@@ -29,7 +27,7 @@ namespace SnakeLadder.Tests.UnitTests
             game.Players[0].Id.Should().Be(player.Id);
         }
 
-        [Fact]
+        [Fact(DisplayName = "Game should not allow adding players more than set limits")]
         public void Game_should_not_allow_adding_players_more_than_set_limits()
         {
             var diceMock = new Mock<Dice>();
@@ -47,7 +45,7 @@ namespace SnakeLadder.Tests.UnitTests
             action.Should().Throw<InvalidOperationException>();
         }
 
-        [Fact]
+        [Fact(DisplayName = "Game should be able to remove player")]
         public void Game_should_be_able_to_remove_player()
         {
             var diceMock = new Mock<Dice>();
@@ -64,7 +62,7 @@ namespace SnakeLadder.Tests.UnitTests
             game.Players.Count.Should().Be(0);
         }
 
-        [Fact]
+        [Fact(DisplayName = "Game should fail when removing player which does not exists")]
         public void Game_should_fail_when_removing_player_which_does_not_exists()
         {
             var diceMock = new Mock<Dice>();
@@ -81,7 +79,7 @@ namespace SnakeLadder.Tests.UnitTests
             action.Should().Throw<InvalidOperationException>();
         }
 
-        [Fact]
+        [Fact(DisplayName = "When starting already running game should fail")]
         public void When_starting_already_running_game_should_fail()
         {
             var diceMock = new Mock<Dice>();
@@ -100,7 +98,7 @@ namespace SnakeLadder.Tests.UnitTests
             action.Should().Throw<InvalidOperationException>();
         }
 
-        [Fact]
+        [Fact(DisplayName = "Game when started with players less than required should fail")]
         public void Game_when_started_with_players_less_than_required_should_fail()
         {
             var diceMock = new Mock<Dice>();
@@ -117,7 +115,7 @@ namespace SnakeLadder.Tests.UnitTests
             action.Should().Throw<InvalidOperationException>();
         }
 
-        [Fact]
+        [Fact(DisplayName = "Game when finished should return game result for winning")]
         public void Game_when_finished_should_return_game_result_for_winning()
         {
             var gameSetting = GetSettings();
@@ -145,7 +143,7 @@ namespace SnakeLadder.Tests.UnitTests
             game.Start();
         }
 
-        [Fact]
+        [Fact(DisplayName = "Game when player is still playing should return game result for moved")]
         public void Game_when_player_is_still_playing_should_return_game_result_for_moved()
         {
             var gameSetting = GetSettings();
@@ -174,7 +172,7 @@ namespace SnakeLadder.Tests.UnitTests
             game.Start();
         }
 
-        [Fact]
+        [Fact(DisplayName = "Game when player is still playing should return game result for denied")]
         public void Game_when_player_is_still_playing_should_return_game_result_for_denied()
         {
             var gameSetting = GetSettings();
@@ -210,7 +208,7 @@ namespace SnakeLadder.Tests.UnitTests
             game.Start();
         }
 
-        [Fact]
+        [Fact(DisplayName = "Stopping a game which is not started yet should fail")]
         public void Stopping_a_game_which_is_not_started_yet_should_fail()
         {
             var diceMock = new Mock<Dice>();
@@ -227,7 +225,7 @@ namespace SnakeLadder.Tests.UnitTests
             action.Should().Throw<InvalidOperationException>();
         }
 
-        [Fact]
+        [Fact(DisplayName = "Stopping a game which is already stopped should fail")]
         public void Stopping_a_game_which_is_already_stopped_should_fail()
         {
             var diceMock = new Mock<Dice>();
