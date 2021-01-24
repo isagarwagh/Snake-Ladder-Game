@@ -11,40 +11,47 @@ namespace SnakeLadder.Main
         {
             get
             {
-                if (PlayerResults.Any(x => x.Value.Status == MoveStatus.Stopped))
+                if (PlayerResults.All(x => x.Value.Status == MoveStatus.Stopped))
                     return GameStatus.Stopped;
 
                 if (PlayerResults.Any(x => x.Value.Status == MoveStatus.Won))
                     return GameStatus.Completed;
 
-                if (PlayerResults.Any(x => x.Value.Status == MoveStatus.Moved || x.Value.Status == MoveStatus.Denied))
+                if (PlayerResults.Any(x => x.Value.Status == MoveStatus.Moved
+                                     || x.Value.Status == MoveStatus.Denied))
                     return GameStatus.InProgress;
 
                 return GameStatus.NotStarted;
             }
         }
 
+        public bool IsRunning => Status == GameStatus.InProgress || Status == GameStatus.Completed;
+
         internal void AddResult(Player player, PlayerMoveResult result)
         {
             if (PlayerResults.ContainsKey(player) == false)
-                throw new InvalidOperationException($"{player.Name} is not registred into the game result");
-
-            PlayerResults[player] = result;
+            {
+                PlayerResults.Add(player, result);
+            }
+            else
+                PlayerResults[player] = result;
         }
 
         internal void RegisterPlayers(List<Player> players)
         {
+            PlayerResults.Clear();
             foreach (var player in players)
             {
-                PlayerResults.Add(player, new PlayerMoveResult(0, MoveStatus.StartingPoint));
+                PlayerResults.Add(player, new PlayerMoveResult(0, MoveStatus.Stopped));
             }
         }
 
-        internal void SetEndStatus()
+        internal void SetEndResult()
         {
             foreach (var playerResult in PlayerResults)
             {
-                playerResult.Value.Status = MoveStatus.Stopped;
+                if (playerResult.Value.Status != MoveStatus.Won)
+                    playerResult.Value.Status = MoveStatus.Stopped;
             }
         }
     }

@@ -7,6 +7,7 @@ namespace SnakeLadder.Main
     {
         private readonly IEndGameListener _endGameListner;
         private IPlayerProgressListener _playerProgressListner;
+        private readonly object gameLock = new object();
 
         private readonly GameSetting _gameSettings;
         private readonly Board _board;
@@ -49,34 +50,41 @@ namespace SnakeLadder.Main
 
         public void Start()
         {
-            if (_gameResult.Status == GameStatus.InProgress)
-                throw new InvalidOperationException($"cannot start the game which is already running");
-
             if (Players.Count < _gameSettings.MinPlayersNeeded)
                 throw new InvalidOperationException($"minimum {_gameSettings.MinPlayersNeeded} player(s) needed to start the game");
 
-            _gameResult.RegisterPlayers(Players);
+            EnsureGameIsNotAlreadyStarted();
 
-            foreach (var player in Players)
+            lock (gameLock)
             {
-                var playerResult = PlayTurn(player);
-                _playerProgressListner?.OnPlayed(playerResult);
-
-                _gameResult.AddResult(player, playerResult);
-
-                if (_gameSettings.ShouldStopTheGame(_gameResult) == true)
-                    _endGameListner.OnEndGame(_gameResult);
+                EnsureGameIsNotAlreadyStarted();
+                PlacePlayersAtZeroPosition();
             }
 
-            _endGameListner.OnEndGame(_gameResult);
+            for (int i = 0; i < _gameSettings.TotalTurns && _gameResult.IsRunning; i++)
+            {
+                foreach (var player in Players)
+                {
+                    var playerResult = PlayTurn(player);
+                    _playerProgressListner?.OnPlayed(playerResult);
+
+                    _gameResult.AddResult(player, playerResult);
+
+                    if (_gameSettings.ShouldStopTheGame(_gameResult) == true)
+                    {
+                        Stop();
+                        return;
+                    }
+                }
+            }
         }
 
         public void Stop()
         {
-            if(_gameResult.Status == GameStatus.NotStarted || _gameResult.Status == GameStatus.Stopped)
-                throw new InvalidOperationException($"cannot stop the game which is not started yet");
+            if (_gameResult.IsRunning == false)
+                throw new InvalidOperationException($"cannot stop the game which is not running currently");
 
-            _gameResult.SetEndStatus();
+            _gameResult.SetEndResult();
 
             _endGameListner.OnEndGame(_gameResult);
         }
@@ -94,6 +102,21 @@ namespace SnakeLadder.Main
                 return new PlayerMoveResult(player.CurrentPosition, MoveStatus.Won);
 
             return new PlayerMoveResult(player.CurrentPosition, MoveStatus.Moved);
+        }
+
+        private void PlacePlayersAtZeroPosition()
+        {
+            foreach (var player in Players)
+            {
+                _board.MovePlayer(player, 0);
+                _gameResult.AddResult(player, new PlayerMoveResult(0, MoveStatus.Moved));
+            }
+        }
+
+        private void EnsureGameIsNotAlreadyStarted()
+        {
+            if (_gameResult.IsRunning == true)
+                throw new InvalidOperationException($"cannot start the game which is already running");
         }
     }
 }

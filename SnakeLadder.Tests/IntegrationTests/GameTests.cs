@@ -17,7 +17,8 @@ namespace SnakeLadder.Tests.Integration
             {
                 BoardSetting = new BoardSetting { Min = 1, Max = 100 },
                 MaxPlayersAllowed = 1,
-                MinPlayersNeeded = 1
+                MinPlayersNeeded = 1,
+                TotalTurns = 1
             };
 
             var randomDice = new RandomDice();
@@ -66,7 +67,8 @@ namespace SnakeLadder.Tests.Integration
             {
                 BoardSetting = new BoardSetting { Min = 0, Max = 100 },
                 MaxPlayersAllowed = 1,
-                MinPlayersNeeded = 1
+                MinPlayersNeeded = 1,
+                TotalTurns = 1
             };
             gameSetting.Snakes.Add(new Snake(1, 0));
             gameSetting.Snakes.Add(new Snake(2, 0));
@@ -95,7 +97,7 @@ namespace SnakeLadder.Tests.Integration
                                   var playerResult = gameResult.PlayerResults.FirstOrDefault(x => x.Key.Equals(player));
                                   playerResult.Should().NotBeNull();
                                   playerResult.Value.NewPosition.Should().Be(0);
-                                  playerResult.Value.Status.Should().Be(MoveStatus.Moved);
+                                  playerResult.Value.Status.Should().Be(MoveStatus.Stopped);
                               });
 
             var game = new Game(randomDice, gameSetting, endGameListnerMock.Object);
@@ -103,14 +105,6 @@ namespace SnakeLadder.Tests.Integration
             game.RegisterPlayerProgressListener(playerProgressListnerMock.Object);
 
             game.Start();
-
-            endGameListnerMock.Setup(x => x.OnEndGame(It.IsAny<GameResult>()))
-                              .Callback((GameResult gameResult) =>
-                              {
-                                  var playerResult = gameResult.PlayerResults.FirstOrDefault(x => x.Key.Equals(player));
-                                  playerResult.Value.Status.Should().Be(MoveStatus.Stopped);
-                              });
-            game.Stop();
         }
 
         [Theory(DisplayName = "The game can be started with normal dice or crooked dice")]
@@ -122,7 +116,8 @@ namespace SnakeLadder.Tests.Integration
             {
                 BoardSetting = new BoardSetting { Min = 1, Max = 100 },
                 MaxPlayersAllowed = 1,
-                MinPlayersNeeded = 1
+                MinPlayersNeeded = 1,
+                TotalTurns = 1
             };
 
             var dice = new DiceFactory().Create(diceType);
@@ -162,6 +157,38 @@ namespace SnakeLadder.Tests.Integration
                                   playerResult.Value.Status.Should().Be(MoveStatus.Stopped);
                               });
             game.Stop();
+        }
+
+        [Fact(DisplayName = "Game runs for ten turns and then stops")]
+        public void Game_runs_for_ten_turns_and_then_stops()
+        {
+            var gameSetting = new GameSetting
+            {
+                BoardSetting = new BoardSetting { Min = 1, Max = 100 },
+                MaxPlayersAllowed = 1,
+                MinPlayersNeeded = 1,
+                TotalTurns = 10
+            };
+
+            var randomDice = new RandomDice();
+            var player = new Player { Id = "p123" };
+            int playerOriginalPosition = player.CurrentPosition;
+
+            var playerProgressListnerMock = new Mock<IPlayerProgressListener>();
+
+            var endGameListnerMock = new Mock<IEndGameListener>();
+            endGameListnerMock.Setup(x => x.OnEndGame(It.IsAny<GameResult>()))
+                              .Callback((GameResult gameResult) =>
+                              {
+                                  var playerResult = gameResult.PlayerResults.FirstOrDefault(x => x.Key.Equals(player));
+                                  gameResult.Status.Should().Be(GameStatus.Stopped);
+                              });
+
+            var game = new Game(randomDice, gameSetting, endGameListnerMock.Object);
+            game.AddPlayer(player);
+            game.RegisterPlayerProgressListener(playerProgressListnerMock.Object);
+
+            game.Start();
         }
     }
 }

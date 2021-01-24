@@ -3,6 +3,8 @@ using Moq;
 using SnakeLadder.Main;
 using System;
 using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 using Xunit;
 
 namespace SnakeLadder.Tests.UnitTests
@@ -86,12 +88,14 @@ namespace SnakeLadder.Tests.UnitTests
             var endGameListnerMock = new Mock<IEndGameListener>();
 
             var gameSetting = GetSettings();
+            gameSetting.TotalTurns = 1;
 
             var player = new Player { Id = "p123" };
 
             var game = new Game(diceMock.Object, gameSetting, endGameListnerMock.Object);
             game.AddPlayer(player);
-            game.Start();
+
+            Task.Factory.StartNew(() =>  game.Start());
 
             Action action = () => game.Start();
 
@@ -123,12 +127,14 @@ namespace SnakeLadder.Tests.UnitTests
             diceMock.Setup(x => x.Roll()).Returns(gameSetting.BoardSetting.Max);
 
             var endGameListnerMock = new Mock<IEndGameListener>();
-            
+            var playerProgressListnerMock = new Mock<IPlayerProgressListener>();
+            playerProgressListnerMock.Setup(x => x.OnPlayed(It.IsAny<PlayerMoveResult>())).Callback(() => Thread.Sleep(1000));
 
             var player = new Player { Id = "p123" };
 
             var game = new Game(diceMock.Object, gameSetting, endGameListnerMock.Object);
             game.AddPlayer(player);
+            game.RegisterPlayerProgressListener(playerProgressListnerMock.Object);
 
             endGameListnerMock.Setup(x => x.OnEndGame(It.IsAny<GameResult>()))
                               .Callback((GameResult gameResult) =>
@@ -225,32 +231,14 @@ namespace SnakeLadder.Tests.UnitTests
             action.Should().Throw<InvalidOperationException>();
         }
 
-        [Fact(DisplayName = "Stopping a game which is already stopped should fail")]
-        public void Stopping_a_game_which_is_already_stopped_should_fail()
-        {
-            var diceMock = new Mock<Dice>();
-            var endGameListnerMock = new Mock<IEndGameListener>();
-
-            var gameSetting = GetSettings();
-
-            var player = new Player { Id = "p123" };
-            var game = new Game(diceMock.Object, gameSetting, endGameListnerMock.Object);
-            game.AddPlayer(player);
-            game.Start();
-            game.Stop();
-
-            Action action = () => game.Stop();
-
-            action.Should().Throw<InvalidOperationException>();
-        }
-
         private static GameSetting GetSettings()
         {
             return new GameSetting
             {
                 BoardSetting = new BoardSetting { Min = 1, Max = 100 },
                 MaxPlayersAllowed = 1,
-                MinPlayersNeeded = 1
+                MinPlayersNeeded = 1,
+                TotalTurns = 1
             };
         }
     }

@@ -2,7 +2,6 @@
 {
     public enum MoveStatus
     {
-        StartingPoint,
         Won,
         Moved,
         Denied,

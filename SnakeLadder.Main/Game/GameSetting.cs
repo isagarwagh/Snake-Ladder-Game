@@ -10,6 +10,7 @@ namespace SnakeLadder.Main
         public BoardSetting BoardSetting { get; set; }
         public int MinPlayersNeeded { get; set; } = 1;
         public List<Snake> Snakes { get; set; } = new List<Snake>();
+        public int TotalTurns { get; internal set; }
 
         public bool HasPlayerWonTheGame(Player player) => player.CurrentPosition == BoardSetting.Max;
 
